@@ -1,7 +1,8 @@
 <script>
+    import { score } from "./store.js";
+
     export let question;
     export let nextQuestion;
-    export let addToScore;
 
     let isCorrect;
     let isAnswered = false;
@@ -29,33 +30,37 @@
         isAnswered = true;
         isCorrect = correct;
         if(correct) {
-            addToScore();
+            score.update(val => val + 1);
         }
     }
 </script>
 
-<h3 class="text-2xl mb-3">{@html question.question}</h3>
+<div class="text-center">
 
-{#if isAnswered}
-    <h3 class="text-md mb-3" class:text-green-600={isCorrect} class:text-red-600={!isCorrect}>
-        {#if isCorrect}
-            You got it right
-        {:else}
-            You goofed up
-        {/if}
-    </h3>
-{/if}
+    <h3 class="text-2xl mb-5">{@html question.question}</h3>
 
-<div class="flex space-x-2 mb-3">
-    {#each allAnswers as answer}
-        <button disabled={isAnswered} on:click={() => checkQuestion(answer.correct)} class="border bg-gray-200 px-3 py-1">
-            {@html answer.answer}
-        </button>
-    {/each}
-</div>
+    {#if isAnswered}
+        <h3 class="text-md mb-3" class:text-green-600={isCorrect} class:text-red-600={!isCorrect}>
+            {#if isCorrect}
+                You got it right
+            {:else}
+                You goofed up
+            {/if}
+        </h3>
+    {/if}
 
-{#if isAnswered}
-    <div class="flex space-x-2 mb-3">
-        <button on:click={() => nextQuestion()} class="border bg-green-300 px-3 py-1">Next question</button>
+    <div class="flex justify-center space-x-2 mb-3">
+        {#each allAnswers as answer}
+            <button disabled={isAnswered} on:click={() => checkQuestion(answer.correct)} class="border bg-gray-200 px-3 py-1">
+                {@html answer.answer}
+            </button>
+        {/each}
     </div>
-{/if}
+
+    {#if isAnswered}
+        <div class="flex justify-center space-x-2 mb-3">
+            <button on:click={() => nextQuestion()} class="border bg-green-300 px-3 py-1">Next question</button>
+        </div>
+    {/if}
+
+</div>

@@ -4,6 +4,8 @@
     import { fade, blur, fly, slide, scale } from "svelte/transition";
     import { onMount, beforeUpdate, afterUpdate, onDestroy } from 'svelte';
     import Question from "./Question.svelte";
+    import Modal from "./Modal.svelte";
+    import { score } from './store.js';
 
     onMount(() => {
         console.log("I mounted");
@@ -19,8 +21,8 @@
     });
 
     let activeQuestion = 0;
-    let score = 0;
     let quiz = getQuiz();
+    let isModalOpen = false;
 
     async function getQuiz() {
         const res = await fetch(
@@ -35,19 +37,15 @@
     }
 
     function resetQuiz() {
-        score = 0;
+        isModalOpen = false;
+        score.set(0);
         activeQuestion = 0;
         quiz = getQuiz();
     }
 
-    function addToScore() {
-        score = score + 1;
-    }
-
     // Reactive Statement
-    $: if (score > 4){
-        alert('You won!');
-        resetQuiz();
+    $: if ($score > 0){
+        isModalOpen = true;
     }
 
     // Reactive Declaration
@@ -55,23 +53,33 @@
 
 </script>
 
-<div class="py-3">
-    <h1 class="text-4xl text-green-600 mb-3">{quizName}</h1>
+<div class="py-5 text-center">
+    <h1 class="text-4xl text-green-600 mb-5">{quizName}</h1>
 
     <button on:click={resetQuiz} class="px-5 py-1 mb-3 bg-purple-500 text-white">Start New Quiz</button>
 
-    <h2 class="text-2xl text-green-600 mb-2">My score: {score}</h2>
-    <p class="mb-3">Question #{questionNumber}</p>
+    <h2 class="text-2xl text-green-600 mb-2">My score: {$score}</h2>
+    <p class="mb-5">Question #{questionNumber}</p>
 
     {#await quiz}
         Loading ...
     {:then data}
         {#each data.results as question, index}
             {#if index == activeQuestion}
-            <div class="absolute max-w-3xl" in:fly={{ x: -200}} out:fly={{ x: 200}}>
-                <Question {addToScore} {nextQuestion} {question} />
+            <div class="absolute w-full max-w-3xl mx-auto p-5 border rounded-lg bg-gray-100" in:fly={{ x: -200}} out:fly={{ x: 200}}>
+                <Question {nextQuestion} {question} />
             </div>
             {/if}
         {/each}
     {/await}
 </div>
+
+{#if isModalOpen}
+    <Modal on:close={resetQuiz}>
+        <div slot="modal" class="flex flex-col justify-center items-center mt-3">
+            <h2 class="text-lg mb-3">You won!</h2>
+            <p class="mb-3">Congratulations</p>
+            <button on:click={resetQuiz} class="border bg-green-300 px-3 py-1">Start Over</button>
+        </div>
+    </Modal>
+{/if}
